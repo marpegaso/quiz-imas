@@ -11,6 +11,7 @@ var session = require('express-session');
 var routes = require('./routes/index');
 
 var app = express();
+var autoLogout = 120000;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -27,6 +28,20 @@ app.use(cookieParser('Quiz 2015'));
 app.use(session());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(function(req, res, next){
+
+	if(req.session.user) {
+		if (req.session.lastAccess && ((Date.now() - req.session.lastAccess) > autoLogout)) {
+				req.session.lastAccess = Date.now();
+				res.redirect('/logout');
+		} else {
+			req.session.lastAccess = Date.now();
+		}
+	}
+	next();
+
+});
 
 app.use(function (req, res, next) {
 	if (!req.path.match(/\/login|\/logout/)) {
