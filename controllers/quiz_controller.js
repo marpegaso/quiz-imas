@@ -13,8 +13,13 @@ exports.load = function(req, res, next, quizId) {
 };
 
 // GET /quizes
-exports.index = function(req, res) {
-	models.Quiz.findAll().then(function(quizes) {
+exports.index = function(req, res, search) {
+	if (req.query.hasOwnProperty('search'))	{
+		var search = '%'+req.query.search.replace(' ', '%')+'%'; 
+	} else {
+		var search = '%';
+	};
+	models.Quiz.findAll({where: ["pregunta like ?", search], order: [['pregunta', 'ASC']]}).then(function(quizes) {
 		res.render('quizes/index', { quizes: quizes, errors: []});
 	}
         ).catch(function(error){next(error)});
@@ -98,3 +103,4 @@ exports.destroy = function(req, res) {
 		res.redirect('/quizes');
 	}).catch(function(error){next(error)});
 };
+
